@@ -8,7 +8,7 @@
     "start": "node app.js",
     "dev": "nodemon app.js"
   },
-  "author": "",
+  "author": "Khusainova Marina",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.20.2",

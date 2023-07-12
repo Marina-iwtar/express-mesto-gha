@@ -48,7 +48,7 @@ module.exports.editProfileAvatar = (req, res) => {
     .orFail()
     .then((users) => res.status(OK).send(users))
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
         return res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные при обновлении аватара.' });
       }
       if (err.name === 'DocumentNotFoundError') {
@@ -64,7 +64,7 @@ module.exports.editProfileUser = (req, res) => {
     .orFail()
     .then((users) => res.status(OK).send(users))
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
         return res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные при обновлении профиля.' });
       }
       if (err.name === 'DocumentNotFoundError') {
