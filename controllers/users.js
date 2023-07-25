@@ -51,6 +51,7 @@ module.exports.getUserMe = (req, res, next) => {
       }
     });
 };
+
 module.exports.createUsers = (req, res, next) => {
   const {
     name, about, avatar, email, password,
@@ -90,14 +91,13 @@ module.exports.createUsers = (req, res, next) => {
 
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
-  User.findUserByCredentials(email, password)
-    .then(({ userId }) => {
-      if (userId) {
-        const token = jwt.sign({ _id: userId }, 'some-secret-key', {
-          expiresIn: '7d',
-        });
-        return res.status(OK).send({ _id: token });
-      }
+  return User.findUserByCredentials(email, password)
+    .then((userId) => {
+      const token = jwt.sign({ _id: userId._id }, 'some-secret-key', {
+        expiresIn: '7d',
+      });
+      // вернём токен
+      res.status(OK).send({ _id: token });
       throw new ErrorUnauthorized('Неправильные почта или пароль');
     })
     .catch(next);
@@ -129,27 +129,25 @@ module.exports.editProfileAvatar = (req, res, next) => {
 
 module.exports.editProfileUser = (req, res, next) => {
   const { name, about } = req.body;
-  const { userId } = req.user;
   User.findByIdAndUpdate(
-    userId,
+    req.user._id,
     { name, about },
     { new: true, runValidators: true },
   )
-    .orFail()
     .then((user) => {
-      if (user) return res.send({ user });
-
-      throw new ErrorNotFound('Пользователь с таким id не найден');
+      if (!user) {
+        return next(new ErrorNotFound('Пользователь с указанным _id не найден.'));
+      }
+      return res.status(OK).send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(
+        return next(
           new ErrorBadRequest(
             'Переданы некорректные данные при обновлении пользователя.',
           ),
         );
-      } else {
-        next(err);
       }
+      return next(err);
     });
 };
