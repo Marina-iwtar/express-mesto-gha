@@ -74,17 +74,14 @@ module.exports.createUsers = (req, res, next) => {
         _id,
       });
     })
+    // eslint-disable-next-line consistent-return
     .catch((err) => {
       if (err.code === 11000) {
         next(
           new ErrrorConflict(`Пользователь с таким ${email} уже зарегистирован`),
         );
-      } else if (err.name === 'ValidationError') {
-        next(
-          new ErrorBadRequest(
-            'Переданы некорректные данные при создании пользователя',
-          ),
-        );
+      } if (err.name === 'ValidationError') {
+        next(new ErrorBadRequest('Переданы некорректные данные при создании пользователя'));
       } else {
         next(err);
       }
@@ -93,13 +90,14 @@ module.exports.createUsers = (req, res, next) => {
 
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
-  return User.findUserByCredentials(email, password)
-    .then((userId) => {
-      const token = jwt.sign({ _id: userId._id }, 'some-secret-key', {
-        expiresIn: '7d',
-      });
-      // вернём токен
-      res.status(OK).send({ _id: token });
+  User.findUserByCredentials(email, password)
+    .then(({ userId }) => {
+      if (userId) {
+        const token = jwt.sign({ _id: userId }, 'some-secret-key', {
+          expiresIn: '7d',
+        });
+        return res.status(OK).send({ _id: token });
+      }
       throw new ErrorUnauthorized('Неправильные почта или пароль');
     })
     .catch(next);
@@ -138,7 +136,11 @@ module.exports.editProfileUser = (req, res, next) => {
     { new: true, runValidators: true },
   )
     .orFail()
-    .then((users) => res.status(OK).send(users))
+    .then((user) => {
+      if (user) return res.send({ user });
+
+      throw new ErrorNotFound('Пользователь с таким id не найден');
+    })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(
@@ -146,10 +148,8 @@ module.exports.editProfileUser = (req, res, next) => {
             'Переданы некорректные данные при обновлении пользователя.',
           ),
         );
+      } else {
+        next(err);
       }
-      if (err.name === 'DocumentNotFoundError') {
-        next(new ErrorNotFound('Пользователь с указанным _id не найден.'));
-      }
-      return next(err);
     });
 };

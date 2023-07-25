@@ -23,7 +23,7 @@ app.post('/signin', validateLogin, login);
 app.use('/cards', auth, require('./routes/cards'));
 app.use('/users', auth, require('./routes/users'));
 
-app.use('*', auth, (req, res, next) => {
+app.use('*', (req, res, next) => {
   next(new ErrorNotFound('Страница не найдена'));
 });
 app.use(errors());
