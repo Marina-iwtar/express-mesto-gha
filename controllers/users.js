@@ -24,8 +24,7 @@ module.exports.getUserId = (req, res, next) => {
             'Переданы некорректные данные при выводе пользователя',
           ),
         );
-      } else
-      if (err.name === 'DocumentNotFoundError') {
+      } else if (err.name === 'DocumentNotFoundError') {
         next(new ErrorNotFound('Пользователь с указанным _id не найден.'));
       } else {
         next(err);
@@ -69,9 +68,12 @@ module.exports.createUsers = (req, res, next) => {
         next(
           new ErrrorConflict(`Пользователь с таким ${email} уже зарегистирован`),
         );
-      } else
-      if (err.name === 'ValidationError') {
-        next(new ErrorBadRequest('Переданы некорректные данные при создании пользователя'));
+      } else if (err.name === 'ValidationError') {
+        next(
+          new ErrorBadRequest(
+            'Переданы некорректные данные при создании пользователя',
+          ),
+        );
       } else {
         next(err);
       }
@@ -108,8 +110,7 @@ module.exports.editProfileAvatar = (req, res, next) => {
             'Переданы некорректные данные при обновлении аватара.',
           ),
         );
-      } else
-      if (err.name === 'DocumentNotFoundError') {
+      } else if (err.name === 'DocumentNotFoundError') {
         next(new ErrorNotFound('Пользователь с указанным _id не найден.'));
       } else {
         next(err);
@@ -133,8 +134,7 @@ module.exports.editProfileUser = (req, res, next) => {
             'Переданы некорректные данные при обновлении пользователя.',
           ),
         );
-      } else
-      if (err.name === 'DocumentNotFoundError') {
+      } else if (err.name === 'DocumentNotFoundError') {
         next(new ErrorNotFound('Пользователь с указанным _id не найден.'));
       } else {
         next(err);

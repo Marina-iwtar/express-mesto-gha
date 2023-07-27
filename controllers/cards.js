@@ -2,10 +2,7 @@ const Card = require('../models/card');
 const ErrorBadRequest = require('../errors/ErrorBadRequest');
 const ErrrorForbidden = require('../errors/ErrorForbidden');
 
-const {
-  OK,
-  CREATE,
-} = require('../utils/constants');
+const { OK, CREATE } = require('../utils/constants');
 
 module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
@@ -14,7 +11,11 @@ module.exports.createCard = (req, res, next) => {
     .then((card) => res.status(CREATE).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new ErrorBadRequest(' Переданы некорректные данные при создании карточки.'));
+        next(
+          new ErrorBadRequest(
+            ' Переданы некорректные данные при создании карточки.',
+          ),
+        );
       } else {
         next(err);
       }
@@ -58,9 +59,12 @@ module.exports.addLikes = (req, res, next) => {
     .then((card) => res.status(OK).send(card))
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new ErrorBadRequest('Переданы некорректные данные для постановки лайка'));
-      } else
-      if (err.name === 'DocumentNotFoundError') {
+        next(
+          new ErrorBadRequest(
+            'Переданы некорректные данные для постановки лайка',
+          ),
+        );
+      } else if (err.name === 'DocumentNotFoundError') {
         next(new ErrorBadRequest('Передан несуществующий _id карточки'));
       } else {
         next(err);
@@ -77,9 +81,10 @@ module.exports.removeLikes = (req, res, next) => {
     .then((card) => res.status(OK).send(card))
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new ErrorBadRequest('Переданы некорректные данные для снятия лайка'));
-      } else
-      if (err.name === 'DocumentNotFoundError') {
+        next(
+          new ErrorBadRequest('Переданы некорректные данные для снятия лайка'),
+        );
+      } else if (err.name === 'DocumentNotFoundError') {
         next(new ErrorBadRequest('Передан несуществующий _id карточки'));
       } else {
         next(err);
