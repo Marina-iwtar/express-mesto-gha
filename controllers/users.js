@@ -24,7 +24,7 @@ module.exports.getUserId = (req, res, next) => {
             'Переданы некорректные данные при выводе пользователя',
           ),
         );
-      }
+      } else
       if (err.name === 'DocumentNotFoundError') {
         next(new ErrorNotFound('Пользователь с указанным _id не найден.'));
       } else {
@@ -33,23 +33,11 @@ module.exports.getUserId = (req, res, next) => {
     });
 };
 module.exports.getUserMe = (req, res, next) => {
-  User.findById(req.user._id)
-    .orFail()
+  const { userId } = req.user;
+  User.findById(userId)
+    .orFail(next(new ErrorNotFound('Пользователь с указанным _id не найден.')))
     .then((user) => res.status(OK).send(user))
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        next(
-          new ErrorBadRequest(
-            'Переданы некорректные данные при выводе пользователя',
-          ),
-        );
-      }
-      if (err.name === 'DocumentNotFoundError') {
-        next(new ErrorNotFound('Пользователь не найден'));
-      } else {
-        next(err);
-      }
-    });
+    .catch(next);
 };
 
 module.exports.createUsers = (req, res, next) => {
@@ -81,7 +69,8 @@ module.exports.createUsers = (req, res, next) => {
         next(
           new ErrrorConflict(`Пользователь с таким ${email} уже зарегистирован`),
         );
-      } if (err.name === 'ValidationError') {
+      } else
+      if (err.name === 'ValidationError') {
         next(new ErrorBadRequest('Переданы некорректные данные при создании пользователя'));
       } else {
         next(err);
@@ -92,8 +81,8 @@ module.exports.createUsers = (req, res, next) => {
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
-    .then((userId) => {
-      const token = jwt.sign({ _id: userId._id }, 'some-secret-key', {
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, 'some-secret-key', {
         expiresIn: '7d',
       });
       // вернём токен
@@ -119,11 +108,12 @@ module.exports.editProfileAvatar = (req, res, next) => {
             'Переданы некорректные данные при обновлении аватара.',
           ),
         );
-      }
+      } else
       if (err.name === 'DocumentNotFoundError') {
         next(new ErrorNotFound('Пользователь с указанным _id не найден.'));
+      } else {
+        next(err);
       }
-      return next(err);
     });
 };
 
@@ -134,20 +124,20 @@ module.exports.editProfileUser = (req, res, next) => {
     { name, about },
     { new: true, runValidators: true },
   )
-    .then((user) => {
-      if (!user) {
-        return next(new ErrorNotFound('Пользователь с указанным _id не найден.'));
-      }
-      return res.status(OK).send(user);
-    })
+    .orFail()
+    .then((users) => res.status(OK).send(users))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return next(
+        next(
           new ErrorBadRequest(
             'Переданы некорректные данные при обновлении пользователя.',
           ),
         );
+      } else
+      if (err.name === 'DocumentNotFoundError') {
+        next(new ErrorNotFound('Пользователь с указанным _id не найден.'));
+      } else {
+        next(err);
       }
-      return next(err);
     });
 };

@@ -59,7 +59,7 @@ module.exports.addLikes = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         next(new ErrorBadRequest('Переданы некорректные данные для постановки лайка'));
-      }
+      } else
       if (err.name === 'DocumentNotFoundError') {
         next(new ErrorBadRequest('Передан несуществующий _id карточки'));
       } else {
@@ -78,7 +78,7 @@ module.exports.removeLikes = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         next(new ErrorBadRequest('Переданы некорректные данные для снятия лайка'));
-      }
+      } else
       if (err.name === 'DocumentNotFoundError') {
         next(new ErrorBadRequest('Передан несуществующий _id карточки'));
       } else {
